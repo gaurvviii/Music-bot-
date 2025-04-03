@@ -2,6 +2,12 @@ const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
 const { AudioFilters, useQueue } = require('discord-player');
 const { Translate } = require('../../process_tools');
 
+// Adding custom anti-static filters
+AudioFilters.define('antistatic', 'highpass=f=200,lowpass=f=15000,silenceremove=start_periods=1:detection=peak');
+AudioFilters.define('clearvoice', 'pan=stereo|c0=c0|c1=c1,highpass=f=75,lowpass=f=12000,dynaudnorm=f=150:g=15:p=0.7');
+AudioFilters.define('crystalclear', 'volume=1.5,highpass=f=60,lowpass=f=17000,afftdn=nr=10:nf=-25:tn=1,loudnorm=I=-16:TP=-1.5:LRA=11');
+AudioFilters.define('crisp', 'treble=g=5,bass=g=2:f=110:w=0.6,volume=1.25,loudnorm');
+
 module.exports = {
     name: 'filter',
     description:('Add a filter to your track'),
@@ -12,7 +18,18 @@ module.exports = {
             description:('The filter you want to add'),
             type: ApplicationCommandOptionType.String,
             required: true,
-            choices: [...Object.keys(AudioFilters.filters).map(m => Object({ name: m, value: m })).splice(0, 25)],
+            choices: [
+                // Add custom filters at the top for better visibility
+                { name: 'antistatic', value: 'antistatic' },
+                { name: 'clearvoice', value: 'clearvoice' },
+                { name: 'crystalclear', value: 'crystalclear' },
+                { name: 'crisp', value: 'crisp' },
+                // Include all standard filters
+                ...Object.keys(AudioFilters.filters)
+                    .filter(f => !['antistatic', 'clearvoice', 'crystalclear', 'crisp'].includes(f))
+                    .map(m => ({ name: m, value: m }))
+                    .splice(0, 21) // Limit to 21 to stay under 25 choices with our 4 custom ones
+            ],
         }
     ],
 
